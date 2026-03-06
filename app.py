@@ -12,6 +12,8 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+UPDATE_INTERVAL_SECONDS = 30
+
 # -------------------------------------------------
 # Theme toggle
 # -------------------------------------------------
@@ -99,8 +101,11 @@ BIOMARKER_TEMPLATE = {
 # Helpers
 # -------------------------------------------------
 def make_time_labels(n: int = 12):
-    start = datetime.now() - timedelta(seconds=(n - 1) * 2)
-    return [(start + timedelta(seconds=30 * i)).strftime("%H:%M:%S") for i in range(n)]
+    start = datetime.now() - timedelta(seconds=(n - 1) * UPDATE_INTERVAL_SECONDS)
+    return [
+        (start + timedelta(seconds=UPDATE_INTERVAL_SECONDS * i)).strftime("%H:%M:%S")
+        for i in range(n)
+    ]
 
 
 def format_value(value, unit):
@@ -352,7 +357,7 @@ def interpretation_text(selected_key: str, selected_marker: dict, selected_statu
             interpretation_note = "The potassium concentration is above the healthy ISF range."
         else:
             interpretation_note = "The potassium concentration is within the healthy ISF range."
-    elif selected_key == "Ca2+":
+    elif selected_key == "Ca":
         if selected_status == "Low":
             interpretation_note = "The calcium concentration is below the healthy ISF range."
         elif selected_status == "High":
@@ -384,12 +389,21 @@ if "time_labels" not in st.session_state:
 if "last_update" not in st.session_state:
     st.session_state.last_update = datetime.now().strftime("%H:%M:%S")
 
+if "last_sim_update_ts" not in st.session_state:
+    st.session_state.last_sim_update_ts = datetime.now()
+
 # -------------------------------------------------
 # Auto-refresh live updates
 # -------------------------------------------------
 if st.session_state.live_mode:
-    st_autorefresh(interval=2000, key="live_refresh")
-    update_live_readings()
+    st_autorefresh(interval=30000, key="live_refresh")
+
+    now = datetime.now()
+    elapsed = (now - st.session_state.last_sim_update_ts).total_seconds()
+
+    if elapsed >= UPDATE_INTERVAL_SECONDS:
+        update_live_readings()
+        st.session_state.last_sim_update_ts = now
 
 # -------------------------------------------------
 # Theme CSS
