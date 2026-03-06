@@ -79,7 +79,7 @@ BIOMARKER_TEMPLATE = {
         "min_sim": 0.090,
         "max_sim": 0.250,
     },
-    "Ca2+": {
+    "Ca": {
         "full": "Calcium",
         "unit": "mg/mL",
         "type": "range",
@@ -100,7 +100,7 @@ BIOMARKER_TEMPLATE = {
 # -------------------------------------------------
 def make_time_labels(n: int = 12):
     start = datetime.now() - timedelta(seconds=(n - 1) * 2)
-    return [(start + timedelta(seconds=2 * i)).strftime("%H:%M:%S") for i in range(n)]
+    return [(start + timedelta(seconds=30 * i)).strftime("%H:%M:%S") for i in range(n)]
 
 
 def format_value(value, unit):
