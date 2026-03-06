@@ -26,7 +26,7 @@ BIOMARKER_TEMPLATE = {
         "card_color": "#ff5e62",
         "soft_color": "#fff2db",
         "icon": "⚠️",
-        "step": 0.004,
+        "step": 0.003,
         "min_sim": 0.000,
         "max_sim": 0.200,
     },
@@ -41,7 +41,7 @@ BIOMARKER_TEMPLATE = {
         "card_color": "#ff5e62",
         "soft_color": "#fff2db",
         "icon": "⚠️",
-        "step": 4.0,
+        "step": 3.0,
         "min_sim": 0.0,
         "max_sim": 220.0,
     },
@@ -56,7 +56,7 @@ BIOMARKER_TEMPLATE = {
         "card_color": "#4cb8a5",
         "soft_color": "#e8f8ef",
         "icon": "💧",
-        "step": 0.015,
+        "step": 0.010,
         "min_sim": 2.90,
         "max_sim": 3.50,
     },
@@ -71,7 +71,7 @@ BIOMARKER_TEMPLATE = {
         "card_color": "#ffb347",
         "soft_color": "#fff2db",
         "icon": "🧪",
-        "step": 0.004,
+        "step": 0.003,
         "min_sim": 0.090,
         "max_sim": 0.250,
     },
@@ -86,7 +86,7 @@ BIOMARKER_TEMPLATE = {
         "card_color": "#45c0e6",
         "soft_color": "#e8f8ef",
         "icon": "🧬",
-        "step": 0.002,
+        "step": 0.0015,
         "min_sim": 0.060,
         "max_sim": 0.120,
     },
@@ -146,10 +146,10 @@ def simulate_next_value(marker: dict) -> float:
 
     if marker["type"] == "range":
         center = (marker["low"] + marker["high"]) / 2
-        pull = (center - current) * 0.10
+        pull = (center - current) * 0.08
     else:
-        target = max(marker["high"] * 1.4, current * 0.99)
-        pull = (target - current) * 0.04
+        target = current
+        pull = (target - current) * 0.02
 
     new_value = current + drift + pull
     new_value = max(marker["min_sim"], min(marker["max_sim"], new_value))
@@ -527,12 +527,13 @@ st.markdown(
 )
 
 # -------------------------------------------------
-# Automatic live update
+# Auto update fragment
 # -------------------------------------------------
 @st.fragment(run_every="2s")
 def live_update_fragment():
     if st.session_state.live_mode:
         update_live_readings()
+        st.rerun()
 
 live_update_fragment()
 
@@ -560,6 +561,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# Optional pause/resume
 st.toggle("Live simulation", key="live_mode")
 
 # Summary cards
