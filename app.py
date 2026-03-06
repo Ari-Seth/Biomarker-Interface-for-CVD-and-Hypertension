@@ -325,7 +325,7 @@ def interpretation_text(selected_key: str, selected_marker: dict, selected_statu
         if selected_status == "High":
             interpretation_note = (
                 "The current cTnI level is above the normal threshold and may indicate "
-                "myocardial injury. This reading should be clinically correlated."
+                "myocardial injury. This reading should be clinically correlated with your health care professional."
             )
         else:
             interpretation_note = "The current cTnI level is within the normal threshold."
@@ -333,7 +333,7 @@ def interpretation_text(selected_key: str, selected_marker: dict, selected_statu
         if selected_status == "High":
             interpretation_note = (
                 "The current BNP level is above the normal threshold and may indicate "
-                "elevated cardiac stress, hypertension or heart failure risk."
+                "elevated cardiac stress, hypertension or heart failure risk. This reading should be clinically correlated with your health care professional."
             )
         else:
             interpretation_note = "The current BNP level is within the normal threshold."
@@ -341,7 +341,7 @@ def interpretation_text(selected_key: str, selected_marker: dict, selected_statu
         if selected_status == "Low":
             interpretation_note = "The sodium concentration is below the healthy ISF range."
         elif selected_status == "High":
-            interpretation_note = "The sodium concentration is above the healthy ISF range with correlation with hypertensive risk."
+            interpretation_note = "The sodium concentration is above the healthy ISF range with correlation with hypertensive risk. This reading should be clinically correlated with your health care professional."
         else:
             interpretation_note = "The sodium concentration is within the healthy ISF range."
     elif selected_key == "K":
@@ -351,14 +351,14 @@ def interpretation_text(selected_key: str, selected_marker: dict, selected_statu
                 "closer monitoring."
             )
         elif selected_status == "High":
-            interpretation_note = "The potassium concentration is above the healthy ISF range with correlation with hypertensive risk."
+            interpretation_note = "The potassium concentration is above the healthy ISF range with correlation with hypertensive risk. This reading should be clinically correlated with your health care professional."
         else:
             interpretation_note = "The potassium concentration is within the healthy ISF range."
     elif selected_key == "Ca2+":
         if selected_status == "Low":
             interpretation_note = "The calcium concentration is below the healthy ISF range."
         elif selected_status == "High":
-            interpretation_note = "The calcium concentration is above the healthy ISF range with correlation with hypertensive risk."
+            interpretation_note = "The calcium concentration is above the healthy ISF range with correlation with hypertensive risk. This reading should be clinically correlated with your health care professional."
         else:
             interpretation_note = "The calcium concentration is within the healthy ISF range."
 
