@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 import random
+import textwrap
 from streamlit_autorefresh import st_autorefresh
 
 st.set_page_config(
@@ -264,45 +265,46 @@ def metric_row_html(key: str, marker: dict, dark_mode: bool = False) -> str:
         subtitle_color = "#75829a"
         title_color = "#1d2940"
 
-    return f"""
-    <div class="metric-card" style="
-        border: 2px solid {card_border};
-        box-shadow: {card_shadow};
-        background: {abnormal_bg};
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        padding: 16px;
-    ">
-        <div style="display:flex; gap:14px; align-items:center;">
-            <div class="left-badge" style="
-                background:{marker['card_color']};
-                min-width:90px;
-                width:90px;
-                padding:14px 8px;
-            ">
-                <div class="left-icon">{display_icon}</div>
-                <div class="left-key">{key}</div>
-            </div>
-
-            <div class="metric-content" style="flex:1;">
-                <div class="metric-title-row" style="display:flex; flex-direction:column; gap:4px; margin-bottom:0;">
-                    <div class="metric-title" style="color:{title_color};">{key}</div>
-                    <div class="metric-subtitle" style="color:{subtitle_color};">{marker['full']}</div>
-                </div>
-            </div>
+    html = f"""
+<div class="metric-card" style="
+    border: 2px solid {card_border};
+    box-shadow: {card_shadow};
+    background: {abnormal_bg};
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+">
+    <div style="display:flex; gap:14px; align-items:center;">
+        <div class="left-badge" style="
+            background:{marker['card_color']};
+            min-width:90px;
+            width:90px;
+            padding:14px 8px;
+        ">
+            <div class="left-icon">{display_icon}</div>
+            <div class="left-key">{key}</div>
         </div>
 
-        <div class="reading-pill" style="
-            background:{status_bg};
-            color:{status_color};
-            width: fit-content;
-        ">
-            <span class="reading-status">{status}</span>
-            <span class="reading-value">{val}</span>
+        <div class="metric-content" style="flex:1;">
+            <div class="metric-title-row" style="display:flex; flex-direction:column; gap:4px; margin-bottom:0;">
+                <div class="metric-title" style="color:{title_color};">{key}</div>
+                <div class="metric-subtitle" style="color:{subtitle_color};">{marker['full']}</div>
+            </div>
         </div>
     </div>
-    """
+
+    <div class="reading-pill" style="
+        background:{status_bg};
+        color:{status_color};
+        width: fit-content;
+    ">
+        <span class="reading-status">{status}</span>
+        <span class="reading-value">{val}</span>
+    </div>
+</div>
+"""
+    return textwrap.dedent(html).strip()
 
 
 def details_html(key: str, marker: dict) -> str:
@@ -315,14 +317,15 @@ def details_html(key: str, marker: dict) -> str:
     else:
         range_text = f"Healthy ISF range: {low} – {high} {marker['unit']}"
 
-    return f"""
-    <div class="detail-summary">
-        <div class="detail-chip"><strong>Biomarker</strong><br>{key}</div>
-        <div class="detail-chip"><strong>Status</strong><br>{status}</div>
-        <div class="detail-chip"><strong>Current ISF</strong><br>{format_value(marker['current'], marker['unit'])}</div>
-        <div class="detail-chip"><strong>Reference</strong><br>{range_text}</div>
-    </div>
-    """
+    html = f"""
+<div class="detail-summary">
+    <div class="detail-chip"><strong>Biomarker</strong><br>{key}</div>
+    <div class="detail-chip"><strong>Status</strong><br>{status}</div>
+    <div class="detail-chip"><strong>Current ISF</strong><br>{format_value(marker['current'], marker['unit'])}</div>
+    <div class="detail-chip"><strong>Reference</strong><br>{range_text}</div>
+</div>
+"""
+    return textwrap.dedent(html).strip()
 
 
 def interpretation_text(selected_key: str, selected_marker: dict, selected_status: str):
@@ -719,7 +722,6 @@ for i in range(0, len(items), 2):
             key, marker = items[i + j]
 
             with row_cols[j]:
-                st.markdown('<div class="summary-cell">', unsafe_allow_html=True)
                 st.markdown(metric_row_html(key, marker, dark_mode), unsafe_allow_html=True)
 
                 btn_col1, btn_col2, btn_col3 = st.columns([1.4, 1, 1.4])
@@ -727,7 +729,7 @@ for i in range(0, len(items), 2):
                     if st.button("Open", key=f"open_{key}", use_container_width=True):
                         st.session_state.selected_marker = key
 
-                st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown("<div style='height:18px;'></div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
 
