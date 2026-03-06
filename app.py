@@ -17,7 +17,7 @@ st.set_page_config(
 # -------------------------------------------------
 top_left, top_right = st.columns([8, 1])
 with top_right:
-    dark_mode = st.toggle("🌙", value=False)
+    dark_mode = st.toggle("🌙", value=True)
 
 # -------------------------------------------------
 # Biomarker template with live simulation settings
