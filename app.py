@@ -203,7 +203,7 @@ def build_chart(marker: dict, dark_mode: bool):
     trend = "#60a5fa" if dark_mode else "#2f5fa7"
     limit = "#22c55e" if dark_mode else "#18a957"
 
-    fig, ax = plt.subplots(figsize=(10, 4.2))
+    fig, ax = plt.subplots(figsize=(10, 3.1))
     fig.patch.set_facecolor(bg)
     ax.set_facecolor(bg)
 
@@ -220,7 +220,7 @@ def build_chart(marker: dict, dark_mode: bool):
     ax.scatter([x[-1]], [current], s=120, color=current_color, edgecolors="white", linewidths=2, zorder=5)
 
     ax.set_xticks(x)
-    ax.set_xticklabels(time_labels, fontsize=9, color=fg)
+    ax.set_xticklabels(time_labels, fontsize=8, color=fg)
     ax.set_ylabel(f"Concentration ({marker['unit']})", color=fg)
     ax.set_xlabel("Time", color=fg)
     ax.set_ylim(ymin, ymax)
@@ -234,7 +234,7 @@ def build_chart(marker: dict, dark_mode: bool):
     ax.spines["bottom"].set_color(grid)
     ax.tick_params(axis="y", colors=fg)
     ax.tick_params(axis="x", colors=fg)
-    legend = ax.legend(loc="upper left", frameon=False, ncol=2, fontsize=9)
+    legend = ax.legend(loc="upper left", frameon=False, ncol=2, fontsize=8)
     for text in legend.get_texts():
         text.set_color(fg)
 
@@ -265,9 +265,9 @@ def metric_row_html(key: str, marker: dict, dark_mode: bool = False) -> str:
         title_color = "#1d2940"
 
     return f"""
-<div class="metric-card" style="border:2px solid {card_border}; box-shadow:{card_shadow}; background:{abnormal_bg}; display:flex; flex-direction:column; gap:14px; padding:16px;">
-<div style="display:flex; gap:14px; align-items:center;">
-<div class="left-badge" style="background:{marker['card_color']}; min-width:90px; width:90px; padding:14px 8px;">
+<div class="metric-card" style="border:2px solid {card_border}; box-shadow:{card_shadow}; background:{abnormal_bg}; display:flex; flex-direction:column; gap:10px; padding:12px;">
+<div style="display:flex; gap:12px; align-items:center;">
+<div class="left-badge" style="background:{marker['card_color']};">
 <div class="left-icon">{display_icon}</div>
 <div class="left-key">{key}</div>
 </div>
@@ -402,71 +402,76 @@ if dark_mode:
         color: #e5e7eb;
     }
     [data-testid="stHeader"] { background: rgba(0,0,0,0); }
-    .app-shell { max-width: 10px; margin: 0 auto; }
+    .app-shell { max-width: 1180px; margin: 0 auto; }
     .top-hero {
         background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
-        border-radius: 28px;
-        padding: 24px;
+        border-radius: 22px;
+        padding: 18px 20px;
         color: white;
-        margin-bottom: 18px;
+        margin-bottom: 14px;
         box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
     }
     .glass-card {
         background: rgba(17,24,39,0.86);
         border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 28px;
-        padding: 16px;
-        margin-bottom: 18px;
+        border-radius: 22px;
+        padding: 12px;
+        margin-bottom: 14px;
         box-shadow: 0 14px 34px rgba(0,0,0,0.22);
     }
     .section-title {
-        font-size: 1.32rem;
+        font-size: 1.1rem;
         font-weight: 800;
         color: #f3f4f6;
-        margin-bottom: 14px;
+        margin-bottom: 10px;
     }
     .metric-card {
         align-items: center;
         gap: 10px;
         border-radius: 18px;
-        margin-bottom: 0px;
+        margin-bottom: 6px;
         min-height: 135px;
+        padding: 12px !important;
     }
     .left-badge {
         border-radius: 14px;
         color: white;
         text-align: center;
+        min-width: 72px !important;
+        width: 72px !important;
+        padding: 10px 6px !important;
     }
-    .left-icon { font-size: 1.25rem; margin-bottom: 6px; }
-    .left-key { font-size: 1.55rem; font-weight: 800; }
+    .left-icon { font-size: 1rem; margin-bottom: 4px; }
+    .left-key { font-size: 1.2rem; font-weight: 800; }
     .metric-content { flex: 1; min-width: 0; }
-    .metric-title { font-size: 1.35rem; font-weight: 800; color: #f3f4f6; }
+    .metric-title { font-size: 1.05rem; font-weight: 800; color: #f3f4f6; }
     .metric-subtitle {
-        font-size: 0.98rem;
+        font-size: 0.82rem;
         color: #9ca3af;
         font-weight: 600;
+        line-height: 1.25;
         word-break: break-word;
         overflow-wrap: anywhere;
         white-space: normal;
     }
     .reading-pill {
-        border-radius: 14px;
-        padding: 10px 14px;
+        border-radius: 12px;
+        padding: 7px 10px;
         display: inline-flex;
-        gap: 10px;
+        gap: 8px;
         font-weight: 800;
-        font-size: 1.12rem;
+        font-size: 0.92rem;
         flex-wrap: wrap;
     }
     .overall-banner {
-        border-radius: 18px;
-        padding: 16px 18px;
+        border-radius: 16px;
+        padding: 12px 16px;
         color: white;
         font-weight: 800;
         text-align: center;
-        font-size: 1.65rem;
-        margin-top: 6px;
-        margin-bottom: 14px;
+        font-size: 1.35rem;
+        margin-top: 4px;
+        margin-bottom: 10px;
     }
     .meta-row {
         display: flex;
@@ -475,66 +480,70 @@ if dark_mode:
         flex-wrap: wrap;
         color: #cbd5e1;
         font-weight: 700;
+        font-size: 0.95rem;
     }
     .detail-summary {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 10px;
-        margin-bottom: 14px;
+        margin-bottom: 12px;
     }
     .detail-chip {
         background: #111827;
         border: 1px solid rgba(255,255,255,0.06);
-        border-radius: 18px;
-        padding: 12px 14px;
+        border-radius: 16px;
+        padding: 10px 12px;
         color: #e5e7eb;
+        font-size: 0.94rem;
     }
     .small-note {
         color: #cbd5e1;
-        font-size: 0.93rem;
+        font-size: 0.90rem;
         margin-top: 4px;
     }
     .footer-note {
         text-align: center;
         color: #9ca3af;
-        font-size: 0.90rem;
-        padding: 10px 0 18px 0;
+        font-size: 0.86rem;
+        padding: 8px 0 14px 0;
     }
     .stTabs [data-baseweb="tab"] {
         background: #1f2937;
         color: #e5e7eb;
-        border-radius: 14px;
+        border-radius: 12px;
     }
     .stTabs [aria-selected="true"] { background: #374151 !important; }
     .interpret-card {
         background: #111827;
-        border-radius: 18px;
-        padding: 18px;
+        border-radius: 16px;
+        padding: 14px;
         border: 1px solid rgba(255,255,255,0.06);
         color: #e5e7eb;
     }
     .interpret-title {
-        font-size: 1.15rem;
+        font-size: 1.05rem;
         font-weight: 800;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
         color: #f3f4f6;
     }
     .interpret-row {
-        margin-bottom: 12px;
-        line-height: 1.55;
+        margin-bottom: 10px;
+        line-height: 1.45;
         color: #d1d5db;
+        font-size: 0.94rem;
     }
     .summary-cell {
-        margin-bottom: 18px;
+        margin-bottom: 12px;
     }
     .summary-cell .metric-card {
-        min-height: 190px;
+        min-height: 135px;
     }
     .stButton > button {
-        border-radius: 14px;
-        min-height: 44px;
+        border-radius: 12px;
+        min-height: 36px;
         font-weight: 700;
         width: 100%;
+        font-size: 0.92rem;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -547,70 +556,75 @@ else:
             linear-gradient(180deg, #edf3fb 0%, #f7f9fc 100%);
     }
     [data-testid="stHeader"] { background: rgba(0,0,0,0); }
-    .app-shell { max-width: 1400px; margin: 0 auto; }
+    .app-shell { max-width: 1180px; margin: 0 auto; }
     .top-hero {
         background: linear-gradient(135deg, #28467d 0%, #3a5d9c 100%);
-        border-radius: 28px;
-        padding: 24px;
+        border-radius: 22px;
+        padding: 18px 20px;
         color: white;
-        margin-bottom: 18px;
+        margin-bottom: 14px;
         box-shadow: 0 16px 40px rgba(30, 55, 100, 0.22);
     }
     .glass-card {
         background: rgba(255,255,255,0.78);
-        border-radius: 28px;
-        padding: 16px;
-        margin-bottom: 18px;
+        border-radius: 22px;
+        padding: 12px;
+        margin-bottom: 14px;
         box-shadow: 0 14px 34px rgba(24, 47, 87, 0.10);
     }
     .section-title {
-        font-size: 1.32rem;
+        font-size: 1.1rem;
         font-weight: 800;
         color: #22324f;
-        margin-bottom: 14px;
+        margin-bottom: 10px;
     }
     .metric-card {
         align-items: center;
-        gap: 14px;
-        border-radius: 22px;
-        margin-bottom: 10px;
-        min-height: 190px;
+        gap: 10px;
+        border-radius: 18px;
+        margin-bottom: 6px;
+        min-height: 135px;
+        padding: 12px !important;
     }
     .left-badge {
-        border-radius: 18px;
+        border-radius: 14px;
         color: white;
         text-align: center;
+        min-width: 72px !important;
+        width: 72px !important;
+        padding: 10px 6px !important;
     }
-    .left-icon { font-size: 1.25rem; margin-bottom: 6px; }
-    .left-key { font-size: 1.55rem; font-weight: 800; }
+    .left-icon { font-size: 1rem; margin-bottom: 4px; }
+    .left-key { font-size: 1.2rem; font-weight: 800; }
     .metric-content { flex: 1; min-width: 0; }
-    .metric-title { font-size: 1.35rem; font-weight: 800; color: #1d2940; }
+    .metric-title { font-size: 1.05rem; font-weight: 800; color: #1d2940; }
     .metric-subtitle {
-        font-size: 0.98rem;
+        font-size: 0.82rem;
         color: #75829a;
         font-weight: 600;
+        line-height: 1.25;
         word-break: break-word;
         overflow-wrap: anywhere;
         white-space: normal;
     }
     .reading-pill {
-        border-radius: 14px;
-        padding: 10px 14px;
+        border-radius: 12px;
+        padding: 7px 10px;
         display: inline-flex;
-        gap: 10px;
+        gap: 8px;
         font-weight: 800;
-        font-size: 1.12rem;
+        font-size: 0.92rem;
         flex-wrap: wrap;
     }
     .overall-banner {
-        border-radius: 18px;
-        padding: 16px 18px;
+        border-radius: 16px;
+        padding: 12px 16px;
         color: white;
         font-weight: 800;
         text-align: center;
-        font-size: 1.65rem;
-        margin-top: 6px;
-        margin-bottom: 14px;
+        font-size: 1.35rem;
+        margin-top: 4px;
+        margin-bottom: 10px;
     }
     .meta-row {
         display: flex;
@@ -619,65 +633,69 @@ else:
         flex-wrap: wrap;
         color: #53627d;
         font-weight: 700;
+        font-size: 0.95rem;
     }
     .detail-summary {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 10px;
-        margin-bottom: 14px;
+        margin-bottom: 12px;
     }
     .detail-chip {
         background: #f6f9fe;
-        border-radius: 18px;
-        padding: 12px 14px;
+        border-radius: 16px;
+        padding: 10px 12px;
         color: #2b3b57;
+        font-size: 0.94rem;
     }
     .small-note {
         color: #6b7b95;
-        font-size: 0.93rem;
+        font-size: 0.90rem;
         margin-top: 4px;
     }
     .footer-note {
         text-align: center;
         color: #8290a9;
-        font-size: 0.90rem;
-        padding: 10px 0 18px 0;
+        font-size: 0.86rem;
+        padding: 8px 0 14px 0;
     }
     .stTabs [data-baseweb="tab"] {
         background: #eef4fb;
         color: #334764;
-        border-radius: 14px;
+        border-radius: 12px;
     }
     .stTabs [aria-selected="true"] { background: #dfeaf9 !important; }
     .interpret-card {
         background: #f8fbff;
-        border-radius: 18px;
-        padding: 18px;
+        border-radius: 16px;
+        padding: 14px;
         border: 1px solid rgba(54,78,120,0.08);
         color: #22324f;
     }
     .interpret-title {
-        font-size: 1.15rem;
+        font-size: 1.05rem;
         font-weight: 800;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
         color: #1d2940;
     }
     .interpret-row {
-        margin-bottom: 12px;
-        line-height: 1.55;
+        margin-bottom: 10px;
+        line-height: 1.45;
         color: #2b3b57;
+        font-size: 0.94rem;
     }
     .summary-cell {
-        margin-bottom: 18px;
+        margin-bottom: 12px;
     }
     .summary-cell .metric-card {
-        min-height: 190px;
+        min-height: 135px;
     }
     .stButton > button {
-        border-radius: 14px;
-        min-height: 44px;
+        border-radius: 12px;
+        min-height: 36px;
         font-weight: 700;
         width: 100%;
+        font-size: 0.92rem;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -694,22 +712,21 @@ st.markdown('<div class="app-shell">', unsafe_allow_html=True)
 st.markdown("""
 <div class="top-hero">
     <div>
-        <div style="font-size:2rem; font-weight:800;">Biomarker Monitoring</div>
-        <div style="font-size:1.02rem; opacity:0.95;">Connected to wearable biosensor</div>
+        <div style="font-size:1.75rem; font-weight:800;">Biomarker Monitoring</div>
+        <div style="font-size:0.95rem; opacity:0.95;">Connected to wearable biosensor</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 st.toggle("Live simulation", key="live_mode")
 
-# Summary cards side by side
 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
 st.markdown('<div class="section-title">Live Biomarker Summary</div>', unsafe_allow_html=True)
 
 items = list(biomarkers.items())
 
 for i in range(0, len(items), 2):
-    row_cols = st.columns(2, gap="large")
+    row_cols = st.columns(2, gap="medium")
 
     for j in range(2):
         if i + j < len(items):
@@ -718,16 +735,15 @@ for i in range(0, len(items), 2):
             with row_cols[j]:
                 st.markdown(metric_row_html(key, marker, dark_mode), unsafe_allow_html=True)
 
-                btn_col1, btn_col2, btn_col3 = st.columns([1.4, 1, 1.4])
+                btn_col1, btn_col2, btn_col3 = st.columns([1.2, 1, 1.2])
                 with btn_col2:
                     if st.button("Open", key=f"open_{key}", use_container_width=True):
                         st.session_state.selected_marker = key
 
-                st.markdown("<div style='height:18px;'></div>", unsafe_allow_html=True)
+                st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Overall status
 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
 st.markdown('<div class="section-title">Overall Status</div>', unsafe_allow_html=True)
 st.markdown(
@@ -742,7 +758,6 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 st.markdown("</div>", unsafe_allow_html=True)
 
-# Details
 selected_key = st.session_state.selected_marker
 selected_marker = biomarkers[selected_key]
 selected_status = get_status(selected_marker)
