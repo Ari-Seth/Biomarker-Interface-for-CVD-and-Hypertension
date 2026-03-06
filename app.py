@@ -168,6 +168,7 @@ def update_live_readings():
 
     now_label = datetime.now().strftime("%H:%M:%S")
     st.session_state.time_labels = st.session_state.time_labels[1:] + [now_label]
+    st.session_state.last_update = now_label
 
 def build_chart(marker_key: str, marker: dict):
     time_labels = st.session_state.time_labels
@@ -271,7 +272,7 @@ if "selected_marker" not in st.session_state:
     st.session_state.selected_marker = "cTnI"
 
 if "live_mode" not in st.session_state:
-    st.session_state.live_mode = False
+    st.session_state.live_mode = True
 
 if "biomarkers" not in st.session_state:
     st.session_state.biomarkers = {
@@ -281,6 +282,9 @@ if "biomarkers" not in st.session_state:
 
 if "time_labels" not in st.session_state:
     st.session_state.time_labels = make_time_labels(12)
+
+if "last_update" not in st.session_state:
+    st.session_state.last_update = datetime.now().strftime("%H:%M:%S")
 
 # -------------------------------------------------
 # Styling
@@ -523,7 +527,7 @@ st.markdown(
 )
 
 # -------------------------------------------------
-# Live update fragment
+# Automatic live update
 # -------------------------------------------------
 @st.fragment(run_every="2s")
 def live_update_fragment():
@@ -556,13 +560,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-live_col1, live_col2 = st.columns([1, 1])
-with live_col1:
-    st.toggle("Live simulation", key="live_mode")
-with live_col2:
-    if st.button("Generate one new reading"):
-        update_live_readings()
-        st.rerun()
+st.toggle("Live simulation", key="live_mode")
 
 # Summary cards
 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
@@ -588,7 +586,7 @@ st.markdown(
 st.markdown(
     f"""
     <div class="meta-row">
-        <div><strong>Last Update:</strong> {datetime.now().strftime("%H:%M:%S")}</div>
+        <div><strong>Last Update:</strong> {st.session_state.last_update}</div>
         <div><strong>Signal Quality:</strong> Good</div>
     </div>
     """,
