@@ -8,7 +8,7 @@ from streamlit_autorefresh import st_autorefresh
 st.set_page_config(
     page_title="Biomarker Monitoring",
     page_icon="🩺",
-    layout="wide",
+    layout="centered",
     initial_sidebar_state="collapsed",
 )
 
@@ -402,7 +402,7 @@ if dark_mode:
         color: #e5e7eb;
     }
     [data-testid="stHeader"] { background: rgba(0,0,0,0); }
-    .app-shell { max-width: 1400px; margin: 0 auto; }
+    .app-shell { max-width: 10px; margin: 0 auto; }
     .top-hero {
         background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
         border-radius: 28px;
@@ -427,13 +427,13 @@ if dark_mode:
     }
     .metric-card {
         align-items: center;
-        gap: 14px;
-        border-radius: 22px;
-        margin-bottom: 10px;
-        min-height: 190px;
+        gap: 10px;
+        border-radius: 18px;
+        margin-bottom: 0px;
+        min-height: 135px;
     }
     .left-badge {
-        border-radius: 18px;
+        border-radius: 14px;
         color: white;
         text-align: center;
     }
