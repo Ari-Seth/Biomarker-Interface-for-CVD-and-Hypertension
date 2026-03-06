@@ -8,7 +8,7 @@ from streamlit_autorefresh import st_autorefresh
 st.set_page_config(
     page_title="Biomarker Monitoring",
     page_icon="🩺",
-    layout="centered",
+    layout="wide",
     initial_sidebar_state="collapsed",
 )
 
@@ -17,7 +17,7 @@ st.set_page_config(
 # -------------------------------------------------
 top_left, top_right = st.columns([8, 1])
 with top_right:
-    dark_mode = st.toggle("🌙", value=True)
+    dark_mode = st.toggle("🌙", value=False)
 
 # -------------------------------------------------
 # Biomarker template with live simulation settings
@@ -31,7 +31,7 @@ BIOMARKER_TEMPLATE = {
         "high": 0.04,
         "current": 0.150,
         "history": [0.012, 0.018, 0.022, 0.031, 0.044, 0.061, 0.082, 0.101, 0.118, 0.135, 0.145, 0.150],
-        "card_color": "#f75eff",
+        "card_color": "#ff5e62",
         "normal_icon": "🫀",
         "step": 0.015,
         "min_sim": 0.000,
@@ -45,7 +45,7 @@ BIOMARKER_TEMPLATE = {
         "high": 100.0,
         "current": 160.0,
         "history": [58, 63, 70, 82, 95, 108, 116, 126, 135, 145, 152, 160],
-        "card_color": "#1202f2",
+        "card_color": "#ff5e62",
         "normal_icon": "🫀",
         "step": 15.0,
         "min_sim": 0.0,
@@ -94,7 +94,6 @@ BIOMARKER_TEMPLATE = {
         "max_sim": 0.120,
     },
 }
-
 
 # -------------------------------------------------
 # Helpers
@@ -153,11 +152,8 @@ def compute_overall_status() -> str:
 def simulate_next_value(marker: dict) -> float:
     current = marker["current"]
     step = marker["step"]
-
-    # Stronger random movement
     drift = random.uniform(-2.5 * step, 2.5 * step)
 
-    # Weak pull back toward center for range biomarkers
     if marker["type"] == "range":
         center = (marker["low"] + marker["high"]) / 2
         pull = (center - current) * 0.02
@@ -259,33 +255,35 @@ def metric_row_html(key: str, marker: dict, dark_mode: bool = False) -> str:
         card_border = "#ef4444" if is_abnormal else "rgba(255,255,255,0.05)"
         card_shadow = "0 10px 22px rgba(239,68,68,0.20)" if is_abnormal else "0 10px 22px rgba(0,0,0,0.18)"
         abnormal_bg = "#2a1316" if is_abnormal else "#1f2937"
+        subtitle_color = "#9ca3af"
+        title_color = "#f3f4f6"
     else:
         card_border = "#ef4444" if is_abnormal else "rgba(54,78,120,0.08)"
         card_shadow = "0 10px 22px rgba(239,68,68,0.18)" if is_abnormal else "0 10px 22px rgba(33,53,88,0.08)"
         abnormal_bg = "#fff5f5" if is_abnormal else "linear-gradient(180deg, #ffffff 0%, #fbfcff 100%)"
+        subtitle_color = "#75829a"
+        title_color = "#1d2940"
 
     return f"""
-    <div class="metric-card" style="
-        border: 2px solid {card_border};
-        box-shadow: {card_shadow};
-        background: {abnormal_bg};
-    ">
-        <div class="left-badge" style="background:{marker['card_color']};">
-            <div class="left-icon">{display_icon}</div>
-            <div class="left-key">{key}</div>
-        </div>
-        <div class="metric-content">
-            <div class="metric-title-row">
-                <div class="metric-title">{key}</div>
-                <div class="metric-subtitle">{marker['full']}</div>
-            </div>
-            <div class="reading-pill" style="background:{status_bg}; color:{status_color};">
-                <span class="reading-status">{status}</span>
-                <span class="reading-value">{val}</span>
-            </div>
-        </div>
-    </div>
-    """
+<div class="metric-card" style="border:2px solid {card_border}; box-shadow:{card_shadow}; background:{abnormal_bg}; display:flex; flex-direction:column; gap:14px; padding:16px;">
+<div style="display:flex; gap:14px; align-items:center;">
+<div class="left-badge" style="background:{marker['card_color']}; min-width:90px; width:90px; padding:14px 8px;">
+<div class="left-icon">{display_icon}</div>
+<div class="left-key">{key}</div>
+</div>
+<div class="metric-content" style="flex:1; min-width:0;">
+<div class="metric-title-row" style="display:flex; flex-direction:column; gap:4px; margin-bottom:0;">
+<div class="metric-title" style="color:{title_color};">{key}</div>
+<div class="metric-subtitle" style="color:{subtitle_color};">{marker['full']}</div>
+</div>
+</div>
+</div>
+<div class="reading-pill" style="background:{status_bg}; color:{status_color}; width:fit-content;">
+<span class="reading-status">{status}</span>
+<span class="reading-value">{val}</span>
+</div>
+</div>
+""".strip()
 
 
 def details_html(key: str, marker: dict) -> str:
@@ -299,13 +297,13 @@ def details_html(key: str, marker: dict) -> str:
         range_text = f"Healthy ISF range: {low} – {high} {marker['unit']}"
 
     return f"""
-    <div class="detail-summary">
-        <div class="detail-chip"><strong>Biomarker</strong><br>{key}</div>
-        <div class="detail-chip"><strong>Status</strong><br>{status}</div>
-        <div class="detail-chip"><strong>Current ISF</strong><br>{format_value(marker['current'], marker['unit'])}</div>
-        <div class="detail-chip"><strong>Reference</strong><br>{range_text}</div>
-    </div>
-    """
+<div class="detail-summary">
+<div class="detail-chip"><strong>Biomarker</strong><br>{key}</div>
+<div class="detail-chip"><strong>Status</strong><br>{status}</div>
+<div class="detail-chip"><strong>Current ISF</strong><br>{format_value(marker['current'], marker['unit'])}</div>
+<div class="detail-chip"><strong>Reference</strong><br>{range_text}</div>
+</div>
+""".strip()
 
 
 def interpretation_text(selected_key: str, selected_marker: dict, selected_status: str):
@@ -404,7 +402,7 @@ if dark_mode:
         color: #e5e7eb;
     }
     [data-testid="stHeader"] { background: rgba(0,0,0,0); }
-    .app-shell { max-width: 760px; margin: 0 auto; }
+    .app-shell { max-width: 1400px; margin: 0 auto; }
     .top-hero {
         background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
         border-radius: 28px;
@@ -428,89 +426,86 @@ if dark_mode:
         margin-bottom: 14px;
     }
     .metric-card {
-        display:flex;
-        align-items:center;
-        gap:14px;
-        border-radius:22px;
-        padding:12px;
-        margin-bottom:10px;
+        align-items: center;
+        gap: 14px;
+        border-radius: 22px;
+        margin-bottom: 10px;
+        min-height: 190px;
     }
     .left-badge {
-        min-width:104px;
-        width:104px;
-        border-radius:18px;
-        color:white;
-        text-align:center;
-        padding:12px 8px;
+        border-radius: 18px;
+        color: white;
+        text-align: center;
     }
-    .left-icon { font-size:1.25rem; margin-bottom:6px; }
-    .left-key { font-size:1.55rem; font-weight:800; }
-    .metric-content { flex:1; min-width:0; }
-    .metric-title-row {
-        display:flex;
-        flex-wrap:wrap;
-        gap:8px;
-        align-items:baseline;
-        margin-bottom:10px;
+    .left-icon { font-size: 1.25rem; margin-bottom: 6px; }
+    .left-key { font-size: 1.55rem; font-weight: 800; }
+    .metric-content { flex: 1; min-width: 0; }
+    .metric-title { font-size: 1.35rem; font-weight: 800; color: #f3f4f6; }
+    .metric-subtitle {
+        font-size: 0.98rem;
+        color: #9ca3af;
+        font-weight: 600;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        white-space: normal;
     }
-    .metric-title { font-size:1.35rem; font-weight:800; color:#f3f4f6; }
-    .metric-subtitle { font-size:0.98rem; color:#9ca3af; font-weight:600; }
     .reading-pill {
-        border-radius:14px;
-        padding:10px 14px;
-        display:inline-flex;
-        gap:10px;
-        font-weight:800;
-        font-size:1.12rem;
+        border-radius: 14px;
+        padding: 10px 14px;
+        display: inline-flex;
+        gap: 10px;
+        font-weight: 800;
+        font-size: 1.12rem;
+        flex-wrap: wrap;
     }
     .overall-banner {
-        border-radius:18px;
-        padding:16px 18px;
-        color:white;
-        font-weight:800;
-        text-align:center;
-        font-size:1.65rem;
-        margin-top:6px;
-        margin-bottom:14px;
+        border-radius: 18px;
+        padding: 16px 18px;
+        color: white;
+        font-weight: 800;
+        text-align: center;
+        font-size: 1.65rem;
+        margin-top: 6px;
+        margin-bottom: 14px;
     }
     .meta-row {
-        display:flex;
-        justify-content:space-between;
-        gap:12px;
-        flex-wrap:wrap;
-        color:#cbd5e1;
-        font-weight:700;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        color: #cbd5e1;
+        font-weight: 700;
     }
     .detail-summary {
-        display:grid;
-        grid-template-columns:repeat(2,minmax(0,1fr));
-        gap:10px;
-        margin-bottom:14px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 14px;
     }
     .detail-chip {
-        background:#111827;
-        border:1px solid rgba(255,255,255,0.06);
-        border-radius:18px;
-        padding:12px 14px;
-        color:#e5e7eb;
+        background: #111827;
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 18px;
+        padding: 12px 14px;
+        color: #e5e7eb;
     }
     .small-note {
-        color:#cbd5e1;
-        font-size:0.93rem;
-        margin-top:4px;
+        color: #cbd5e1;
+        font-size: 0.93rem;
+        margin-top: 4px;
     }
     .footer-note {
-        text-align:center;
-        color:#9ca3af;
-        font-size:0.90rem;
-        padding:10px 0 18px 0;
+        text-align: center;
+        color: #9ca3af;
+        font-size: 0.90rem;
+        padding: 10px 0 18px 0;
     }
     .stTabs [data-baseweb="tab"] {
-        background:#1f2937;
-        color:#e5e7eb;
-        border-radius:14px;
+        background: #1f2937;
+        color: #e5e7eb;
+        border-radius: 14px;
     }
-    .stTabs [aria-selected="true"] { background:#374151 !important; }
+    .stTabs [aria-selected="true"] { background: #374151 !important; }
     .interpret-card {
         background: #111827;
         border-radius: 18px;
@@ -529,6 +524,18 @@ if dark_mode:
         line-height: 1.55;
         color: #d1d5db;
     }
+    .summary-cell {
+        margin-bottom: 18px;
+    }
+    .summary-cell .metric-card {
+        min-height: 190px;
+    }
+    .stButton > button {
+        border-radius: 14px;
+        min-height: 44px;
+        font-weight: 700;
+        width: 100%;
+    }
     </style>
     """, unsafe_allow_html=True)
 else:
@@ -540,7 +547,7 @@ else:
             linear-gradient(180deg, #edf3fb 0%, #f7f9fc 100%);
     }
     [data-testid="stHeader"] { background: rgba(0,0,0,0); }
-    .app-shell { max-width: 760px; margin: 0 auto; }
+    .app-shell { max-width: 1400px; margin: 0 auto; }
     .top-hero {
         background: linear-gradient(135deg, #28467d 0%, #3a5d9c 100%);
         border-radius: 28px;
@@ -563,88 +570,85 @@ else:
         margin-bottom: 14px;
     }
     .metric-card {
-        display:flex;
-        align-items:center;
-        gap:14px;
-        border-radius:22px;
-        padding:12px;
-        margin-bottom:10px;
+        align-items: center;
+        gap: 14px;
+        border-radius: 22px;
+        margin-bottom: 10px;
+        min-height: 190px;
     }
     .left-badge {
-        min-width:104px;
-        width:104px;
-        border-radius:18px;
-        color:white;
-        text-align:center;
-        padding:12px 8px;
+        border-radius: 18px;
+        color: white;
+        text-align: center;
     }
-    .left-icon { font-size:1.25rem; margin-bottom:6px; }
-    .left-key { font-size:1.55rem; font-weight:800; }
-    .metric-content { flex:1; min-width:0; }
-    .metric-title-row {
-        display:flex;
-        flex-wrap:wrap;
-        gap:8px;
-        align-items:baseline;
-        margin-bottom:10px;
+    .left-icon { font-size: 1.25rem; margin-bottom: 6px; }
+    .left-key { font-size: 1.55rem; font-weight: 800; }
+    .metric-content { flex: 1; min-width: 0; }
+    .metric-title { font-size: 1.35rem; font-weight: 800; color: #1d2940; }
+    .metric-subtitle {
+        font-size: 0.98rem;
+        color: #75829a;
+        font-weight: 600;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+        white-space: normal;
     }
-    .metric-title { font-size:1.35rem; font-weight:800; color:#1d2940; }
-    .metric-subtitle { font-size:0.98rem; color:#75829a; font-weight:600; }
     .reading-pill {
-        border-radius:14px;
-        padding:10px 14px;
-        display:inline-flex;
-        gap:10px;
-        font-weight:800;
-        font-size:1.12rem;
+        border-radius: 14px;
+        padding: 10px 14px;
+        display: inline-flex;
+        gap: 10px;
+        font-weight: 800;
+        font-size: 1.12rem;
+        flex-wrap: wrap;
     }
     .overall-banner {
-        border-radius:18px;
-        padding:16px 18px;
-        color:white;
-        font-weight:800;
-        text-align:center;
-        font-size:1.65rem;
-        margin-top:6px;
-        margin-bottom:14px;
+        border-radius: 18px;
+        padding: 16px 18px;
+        color: white;
+        font-weight: 800;
+        text-align: center;
+        font-size: 1.65rem;
+        margin-top: 6px;
+        margin-bottom: 14px;
     }
     .meta-row {
-        display:flex;
-        justify-content:space-between;
-        gap:12px;
-        flex-wrap:wrap;
-        color:#53627d;
-        font-weight:700;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        color: #53627d;
+        font-weight: 700;
     }
     .detail-summary {
-        display:grid;
-        grid-template-columns:repeat(2,minmax(0,1fr));
-        gap:10px;
-        margin-bottom:14px;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 14px;
     }
     .detail-chip {
-        background:#f6f9fe;
-        border-radius:18px;
-        padding:12px 14px;
-        color:#2b3b57;
+        background: #f6f9fe;
+        border-radius: 18px;
+        padding: 12px 14px;
+        color: #2b3b57;
     }
     .small-note {
-        color:#6b7b95;
-        font-size:0.93rem;
-        margin-top:4px;
+        color: #6b7b95;
+        font-size: 0.93rem;
+        margin-top: 4px;
     }
     .footer-note {
-        text-align:center;
-        color:#8290a9;
-        font-size:0.90rem;
-        padding:10px 0 18px 0;
+        text-align: center;
+        color: #8290a9;
+        font-size: 0.90rem;
+        padding: 10px 0 18px 0;
     }
     .stTabs [data-baseweb="tab"] {
-        background:#eef4fb;
-        color:#334764;
-        border-radius:14px;
+        background: #eef4fb;
+        color: #334764;
+        border-radius: 14px;
     }
-    .stTabs [aria-selected="true"] { background:#dfeaf9 !important; }
+    .stTabs [aria-selected="true"] { background: #dfeaf9 !important; }
     .interpret-card {
         background: #f8fbff;
         border-radius: 18px;
@@ -662,6 +666,18 @@ else:
         margin-bottom: 12px;
         line-height: 1.55;
         color: #2b3b57;
+    }
+    .summary-cell {
+        margin-bottom: 18px;
+    }
+    .summary-cell .metric-card {
+        min-height: 190px;
+    }
+    .stButton > button {
+        border-radius: 14px;
+        min-height: 44px;
+        font-weight: 700;
+        width: 100%;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -686,19 +702,32 @@ st.markdown("""
 
 st.toggle("Live simulation", key="live_mode")
 
+# Summary cards side by side
 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
 st.markdown('<div class="section-title">Live Biomarker Summary</div>', unsafe_allow_html=True)
 
-for key, marker in biomarkers.items():
-    c1, c2 = st.columns([5.2, 1.2], vertical_alignment="center")
-    with c1:
-        st.markdown(metric_row_html(key, marker, dark_mode), unsafe_allow_html=True)
-    with c2:
-        if st.button("Open", key=f"open_{key}"):
-            st.session_state.selected_marker = key
+items = list(biomarkers.items())
+
+for i in range(0, len(items), 2):
+    row_cols = st.columns(2, gap="large")
+
+    for j in range(2):
+        if i + j < len(items):
+            key, marker = items[i + j]
+
+            with row_cols[j]:
+                st.markdown(metric_row_html(key, marker, dark_mode), unsafe_allow_html=True)
+
+                btn_col1, btn_col2, btn_col3 = st.columns([1.4, 1, 1.4])
+                with btn_col2:
+                    if st.button("Open", key=f"open_{key}", use_container_width=True):
+                        st.session_state.selected_marker = key
+
+                st.markdown("<div style='height:18px;'></div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
 
+# Overall status
 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
 st.markdown('<div class="section-title">Overall Status</div>', unsafe_allow_html=True)
 st.markdown(
@@ -713,6 +742,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 st.markdown("</div>", unsafe_allow_html=True)
 
+# Details
 selected_key = st.session_state.selected_marker
 selected_marker = biomarkers[selected_key]
 selected_status = get_status(selected_marker)
