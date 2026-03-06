@@ -79,7 +79,7 @@ BIOMARKER_TEMPLATE = {
         "min_sim": 0.090,
         "max_sim": 0.250,
     },
-    "Ca2+": {
+    "Ca": {
         "full": "Calcium",
         "unit": "mg/mL",
         "type": "range",
