@@ -13,6 +13,13 @@ st.set_page_config(
 )
 
 # -------------------------------------------------
+# Theme toggle
+# -------------------------------------------------
+top_left, top_right = st.columns([8, 1])
+with top_right:
+    dark_mode = st.toggle("🌙", value=False)
+
+# -------------------------------------------------
 # Biomarker template with live simulation settings
 # -------------------------------------------------
 BIOMARKER_TEMPLATE = {
@@ -88,6 +95,9 @@ BIOMARKER_TEMPLATE = {
     },
 }
 
+# -------------------------------------------------
+# Helpers
+# -------------------------------------------------
 def make_time_labels(n: int = 12):
     start = datetime.now() - timedelta(seconds=(n - 1) * 2)
     return [(start + timedelta(seconds=2 * i)).strftime("%H:%M:%S") for i in range(n)]
@@ -158,7 +168,7 @@ def update_live_readings():
     st.session_state.time_labels = st.session_state.time_labels[1:] + [now_label]
     st.session_state.last_update = now_label
 
-def build_chart(marker: dict):
+def build_chart(marker: dict, dark_mode: bool):
     time_labels = st.session_state.time_labels
     y = marker["history"]
     x = list(range(len(time_labels)))
@@ -166,7 +176,7 @@ def build_chart(marker: dict):
     low = marker["low"]
     high = marker["high"]
     status = get_status(marker)
-    current_color = "#2e9d62" if status == "Normal" else "#e14d4d"
+    current_color = "#34d399" if status == "Normal" else "#f87171"
 
     ymin = min(min(y), low, current)
     ymax = max(max(y), high, current)
@@ -174,34 +184,47 @@ def build_chart(marker: dict):
     ymin = max(0, ymin - padding)
     ymax = ymax + padding
 
+    bg = "#111827" if dark_mode else "white"
+    fg = "#e5e7eb" if dark_mode else "#24324a"
+    grid = "#334155" if dark_mode else "#dbe4f0"
+    trend = "#60a5fa" if dark_mode else "#2f5fa7"
+    limit = "#22c55e" if dark_mode else "#18a957"
+
     fig, ax = plt.subplots(figsize=(10, 4.2))
-    fig.patch.set_facecolor("white")
-    ax.set_facecolor("white")
+    fig.patch.set_facecolor(bg)
+    ax.set_facecolor(bg)
 
     if marker["type"] == "range":
-        ax.axhspan(low, high, alpha=0.14, color="#2e9d62")
-        ax.axhline(low, linestyle="--", linewidth=2, color="#18a957", label="Lower limit")
-        ax.axhline(high, linestyle="--", linewidth=2, color="#18a957", label="Upper range")
+        ax.axhspan(low, high, alpha=0.14, color="#22c55e")
+        ax.axhline(low, linestyle="--", linewidth=2, color=limit, label="Lower limit")
+        ax.axhline(high, linestyle="--", linewidth=2, color=limit, label="Upper range")
     else:
-        ax.axhspan(high, ymax, alpha=0.08, color="#e14d4d")
-        ax.axhline(high, linestyle="--", linewidth=2, color="#18a957", label="Upper limit")
+        ax.axhspan(high, ymax, alpha=0.10, color="#ef4444")
+        ax.axhline(high, linestyle="--", linewidth=2, color=limit, label="Upper limit")
 
-    ax.plot(x, y, marker="o", linewidth=3, markersize=6, color="#2f5fa7", label="Trend")
+    ax.plot(x, y, marker="o", linewidth=3, markersize=6, color=trend, label="Trend")
     ax.axhline(current, linewidth=4, color=current_color, label="Current ISF level")
     ax.scatter([x[-1]], [current], s=120, color=current_color, edgecolors="white", linewidths=2, zorder=5)
 
     ax.set_xticks(x)
-    ax.set_xticklabels(time_labels, fontsize=9)
-    ax.set_ylabel(f"Concentration ({marker['unit']})")
-    ax.set_xlabel("Time")
+    ax.set_xticklabels(time_labels, fontsize=9, color=fg)
+    ax.set_ylabel(f"Concentration ({marker['unit']})", color=fg)
+    ax.set_xlabel("Time", color=fg)
     ax.set_ylim(ymin, ymax)
-    ax.grid(True, axis="y", alpha=0.2)
+    ax.grid(True, axis="y", alpha=0.25, color=grid)
     ax.grid(False, axis="x")
 
     for spine in ["top", "right"]:
         ax.spines[spine].set_visible(False)
 
-    ax.legend(loc="upper left", frameon=False, ncol=2, fontsize=9)
+    ax.spines["left"].set_color(grid)
+    ax.spines["bottom"].set_color(grid)
+    ax.tick_params(axis="y", colors=fg)
+    ax.tick_params(axis="x", colors=fg)
+    legend = ax.legend(loc="upper left", frameon=False, ncol=2, fontsize=9)
+    for text in legend.get_texts():
+        text.set_color(fg)
+
     plt.tight_layout()
     return fig
 
@@ -210,6 +233,7 @@ def metric_row_html(key: str, marker: dict) -> str:
     status_color = get_status_color(status)
     status_bg = get_status_bg(status)
     val = format_value(marker["current"], marker["unit"])
+
     return f"""
     <div class="metric-card">
         <div class="left-badge" style="background:{marker['card_color']};">
@@ -233,10 +257,12 @@ def details_html(key: str, marker: dict) -> str:
     status = get_status(marker)
     low = marker["low"]
     high = marker["high"]
+
     if marker["type"] == "upper_only":
         range_text = f"Normal: 0 – {high} {marker['unit']}<br>Unhealthy: &gt; {high} {marker['unit']}"
     else:
         range_text = f"Healthy ISF range: {low} – {high} {marker['unit']}"
+
     return f"""
     <div class="detail-summary">
         <div class="detail-chip"><strong>Biomarker</strong><br>{key}</div>
@@ -246,6 +272,9 @@ def details_html(key: str, marker: dict) -> str:
     </div>
     """
 
+# -------------------------------------------------
+# Session state
+# -------------------------------------------------
 if "selected_marker" not in st.session_state:
     st.session_state.selected_marker = "cTnI"
 
@@ -264,58 +293,133 @@ if "time_labels" not in st.session_state:
 if "last_update" not in st.session_state:
     st.session_state.last_update = datetime.now().strftime("%H:%M:%S")
 
+# -------------------------------------------------
+# Auto-refresh live updates
+# -------------------------------------------------
 if st.session_state.live_mode:
     st_autorefresh(interval=2000, key="live_refresh")
     update_live_readings()
 
-st.markdown("""
-<style>
-.stApp {
-    background:
-        radial-gradient(circle at top left, rgba(90,124,187,0.10), transparent 30%),
-        linear-gradient(180deg, #edf3fb 0%, #f7f9fc 100%);
-}
-.app-shell {max-width: 760px; margin: 0 auto;}
-.top-hero {
-    background: linear-gradient(135deg, #28467d 0%, #3a5d9c 100%);
-    border-radius: 28px; padding: 24px; color: white; margin-bottom: 18px;
-}
-.glass-card {
-    background: rgba(255,255,255,0.78);
-    border-radius: 28px; padding: 16px; margin-bottom: 18px;
-    box-shadow: 0 14px 34px rgba(24, 47, 87, 0.10);
-}
-.section-title {font-size: 1.32rem; font-weight: 800; color: #22324f; margin-bottom: 14px;}
-.metric-card {
-    display:flex; align-items:center; gap:14px; background:white; border-radius:22px;
-    padding:12px; margin-bottom:10px;
-}
-.left-badge {
-    min-width:104px; width:104px; border-radius:18px; color:white; text-align:center; padding:12px 8px;
-}
-.left-key {font-size:1.55rem; font-weight:800;}
-.metric-title {font-size:1.35rem; font-weight:800; color:#1d2940;}
-.metric-subtitle {font-size:0.98rem; color:#75829a; font-weight:600;}
-.reading-pill {
-    border-radius:14px; padding:10px 14px; display:inline-flex; gap:10px; font-weight:800; font-size:1.12rem;
-}
-.overall-banner {
-    border-radius:18px; padding:16px 18px; color:white; font-weight:800; text-align:center;
-    font-size:1.65rem; margin-top:6px; margin-bottom:14px;
-}
-.meta-row {display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; color:#53627d; font-weight:700;}
-.detail-summary {display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-bottom:14px;}
-.detail-chip {background:#f6f9fe; border-radius:18px; padding:12px 14px; color:#2b3b57;}
-.small-note {color:#6b7b95; font-size:0.93rem; margin-top:4px;}
-.footer-note {text-align:center; color:#8290a9; font-size:0.90rem; padding:10px 0 18px 0;}
-</style>
-""", unsafe_allow_html=True)
+# -------------------------------------------------
+# Theme CSS
+# -------------------------------------------------
+if dark_mode:
+    st.markdown("""
+    <style>
+    .stApp {
+        background: linear-gradient(180deg, #0b1220 0%, #111827 100%);
+        color: #e5e7eb;
+    }
+    [data-testid="stHeader"] { background: rgba(0,0,0,0); }
+    .app-shell { max-width: 760px; margin: 0 auto; }
+    .top-hero {
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+        border-radius: 28px; padding: 24px; color: white; margin-bottom: 18px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+    }
+    .glass-card {
+        background: rgba(17,24,39,0.86);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 28px; padding: 16px; margin-bottom: 18px;
+        box-shadow: 0 14px 34px rgba(0,0,0,0.22);
+    }
+    .section-title { font-size: 1.32rem; font-weight: 800; color: #f3f4f6; margin-bottom: 14px; }
+    .metric-card {
+        display:flex; align-items:center; gap:14px; background:#1f2937; border-radius:22px;
+        padding:12px; margin-bottom:10px; border:1px solid rgba(255,255,255,0.05);
+    }
+    .left-badge {
+        min-width:104px; width:104px; border-radius:18px; color:white; text-align:center; padding:12px 8px;
+    }
+    .left-icon { font-size:1.25rem; margin-bottom:6px; }
+    .left-key { font-size:1.55rem; font-weight:800; }
+    .metric-content { flex:1; min-width:0; }
+    .metric-title-row { display:flex; flex-wrap:wrap; gap:8px; align-items:baseline; margin-bottom:10px; }
+    .metric-title { font-size:1.35rem; font-weight:800; color:#f3f4f6; }
+    .metric-subtitle { font-size:0.98rem; color:#9ca3af; font-weight:600; }
+    .reading-pill {
+        border-radius:14px; padding:10px 14px; display:inline-flex; gap:10px; font-weight:800; font-size:1.12rem;
+    }
+    .overall-banner {
+        border-radius:18px; padding:16px 18px; color:white; font-weight:800; text-align:center;
+        font-size:1.65rem; margin-top:6px; margin-bottom:14px;
+    }
+    .meta-row { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; color:#cbd5e1; font-weight:700; }
+    .detail-summary { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-bottom:14px; }
+    .detail-chip {
+        background:#111827; border:1px solid rgba(255,255,255,0.06);
+        border-radius:18px; padding:12px 14px; color:#e5e7eb;
+    }
+    .small-note { color:#cbd5e1; font-size:0.93rem; margin-top:4px; }
+    .footer-note { text-align:center; color:#9ca3af; font-size:0.90rem; padding:10px 0 18px 0; }
+    .stTabs [data-baseweb="tab"] {
+        background:#1f2937; color:#e5e7eb; border-radius:14px;
+    }
+    .stTabs [aria-selected="true"] { background:#374151 !important; }
+    </style>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("""
+    <style>
+    .stApp {
+        background:
+            radial-gradient(circle at top left, rgba(90,124,187,0.10), transparent 30%),
+            linear-gradient(180deg, #edf3fb 0%, #f7f9fc 100%);
+    }
+    [data-testid="stHeader"] { background: rgba(0,0,0,0); }
+    .app-shell { max-width: 760px; margin: 0 auto; }
+    .top-hero {
+        background: linear-gradient(135deg, #28467d 0%, #3a5d9c 100%);
+        border-radius: 28px; padding: 24px; color: white; margin-bottom: 18px;
+        box-shadow: 0 16px 40px rgba(30, 55, 100, 0.22);
+    }
+    .glass-card {
+        background: rgba(255,255,255,0.78);
+        border-radius: 28px; padding: 16px; margin-bottom: 18px;
+        box-shadow: 0 14px 34px rgba(24, 47, 87, 0.10);
+    }
+    .section-title { font-size: 1.32rem; font-weight: 800; color: #22324f; margin-bottom: 14px; }
+    .metric-card {
+        display:flex; align-items:center; gap:14px; background:white; border-radius:22px;
+        padding:12px; margin-bottom:10px;
+    }
+    .left-badge {
+        min-width:104px; width:104px; border-radius:18px; color:white; text-align:center; padding:12px 8px;
+    }
+    .left-icon { font-size:1.25rem; margin-bottom:6px; }
+    .left-key { font-size:1.55rem; font-weight:800; }
+    .metric-content { flex:1; min-width:0; }
+    .metric-title-row { display:flex; flex-wrap:wrap; gap:8px; align-items:baseline; margin-bottom:10px; }
+    .metric-title { font-size:1.35rem; font-weight:800; color:#1d2940; }
+    .metric-subtitle { font-size:0.98rem; color:#75829a; font-weight:600; }
+    .reading-pill {
+        border-radius:14px; padding:10px 14px; display:inline-flex; gap:10px; font-weight:800; font-size:1.12rem;
+    }
+    .overall-banner {
+        border-radius:18px; padding:16px 18px; color:white; font-weight:800; text-align:center;
+        font-size:1.65rem; margin-top:6px; margin-bottom:14px;
+    }
+    .meta-row { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; color:#53627d; font-weight:700; }
+    .detail-summary { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-bottom:14px; }
+    .detail-chip { background:#f6f9fe; border-radius:18px; padding:12px 14px; color:#2b3b57; }
+    .small-note { color:#6b7b95; font-size:0.93rem; margin-top:4px; }
+    .footer-note { text-align:center; color:#8290a9; font-size:0.90rem; padding:10px 0 18px 0; }
+    .stTabs [data-baseweb="tab"] {
+        background:#eef4fb; color:#334764; border-radius:14px;
+    }
+    .stTabs [aria-selected="true"] { background:#dfeaf9 !important; }
+    </style>
+    """, unsafe_allow_html=True)
 
+# -------------------------------------------------
+# Layout
+# -------------------------------------------------
 biomarkers = st.session_state.biomarkers
 overall = compute_overall_status()
 overall_color = "#ef5350" if overall == "DANGER" else "#ffb347" if overall == "WARNING" else "#2e9d62"
 
 st.markdown('<div class="app-shell">', unsafe_allow_html=True)
+
 st.markdown("""
 <div class="top-hero">
     <div>
@@ -362,7 +466,7 @@ st.markdown(details_html(selected_key, selected_marker), unsafe_allow_html=True)
 tab1, tab2, tab3 = st.tabs(["Trend", "History", "Interpretation"])
 
 with tab1:
-    fig = build_chart(selected_marker)
+    fig = build_chart(selected_marker, dark_mode)
     st.pyplot(fig, use_container_width=True)
 
     if selected_marker["type"] == "upper_only":
